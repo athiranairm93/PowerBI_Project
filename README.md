@@ -20,4 +20,4 @@ The dashboard consist of five main pages, each focusing on a key aspect of the b
    
 9. Impact Analysis
     
-A dedicated “What-If” parameters pane allows managers to simulate the impact of strategy changes
+   A dedicated “What-If” parameters pane allows managers to simulate the impact of strategy changes
