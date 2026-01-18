@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h2 id="strategic-sales--customer-insights-dashboard">Strategic Sales &amp; Customer Insights Dashboard</h2>
+<p>The dashboard consist of five main pages, each focusing on a key aspect of the business.</p>
+<h3 id="data-preparation">Data Preparation</h3>
+<p>Merged the sales data from 2015-2024 into a new table called “FactSales”.</p>
+<h3 id="power-bi-data-model-setup">Power BI Data Model Setup</h3>
+<ol>
+<li>Imported all the csv files</li>
+<li>For accurate time-intelligence calculations like (Month Over Month, MOM and Year Over Year, YOY, creating calendar), a separate date table is created.</li>
+</ol>
+<blockquote>
+<p>DimDate = CALENDAR (MIN(FactSales[OrderDate]), MAX(FactSales[OrderDate]))<br>
+Year =  YEAR(‘DimDate’[Date])<br>
+MonthYear =  FORMAT(‘DimDate’[Date], “YYYY-MM”)<br>
+Month =  FORMAT(‘DimDate’[Date],“mmm”)<br>
+Day Name =  FORMAT(‘DimDate’[Date],“ddd”)<br>
+Day Number =  FORMAT(‘DimDate’[Date],“d”)<br>
+Week Day =  WEEKDAY(‘DimDate’[Date],2)<br>
+Week Number =  WEEKNUM(‘DimDate’[Date],2)</p>
+</blockquote>
+<h3 id="established-relationships">Established Relationships</h3>
+<blockquote>
+<p>FactSales [CustomerID] → Customers[CustomerID]<br>
+FactSales [ProductID] → Products[ProductID]<br>
+FactSales [RegionID] → Regions[RegionID]<br>
+FactSales [SalesOrderID] → customer_service_ratings[SalesOrderID]<br>
+FactSales [OrderDate] → DimDate[Date]</p>
+</blockquote>
+<h3 id="dax-measures">DAX Measures</h3>
+<p><strong>Core Financial Measures (Base Metrics)</strong></p>
+<p>These measures form the foundation for all profitability and revenue analysis, and are used in subsequent time intelligence calculations.</p>
+
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Formula</th>
+<th>Explaination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total Revenue</td>
+<td>SUM(‘FactSales’[TotalSales])</td>
+<td>The total value of all sales transactions.</td>
+</tr>
+<tr>
+<td>Total Profit</td>
+<td>SUM(‘FactSales’[Profit])</td>
+<td>The total profit earned from all sales.</td>
+</tr>
+<tr>
+<td>Total Cost</td>
+<td>SUM(FactSales[Cost])</td>
+<td>The total cost of goods sold.</td>
+</tr>
+<tr>
+<td>Total Quantity Sold</td>
+<td>SUM(FactSales[Quantity])</td>
+<td>Total number of products sold.</td>
+</tr>
+<tr>
+<td>Total Transactions</td>
+<td>DISTINCTCOUNT(‘FactSales’[SalesOrderID])</td>
+<td>The count of unique sales orders</td>
+</tr>
+<tr>
+<td>Profit Margin %</td>
+<td>DIVIDE([Total Profit], [Total Revenue], 0)</td>
+<td>Calculates the overall profitability).</td>
+</tr>
+</tbody>
+</table><p><strong>Time Intelligence Measures (Trends and Growth)</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Formula</th>
+<th>Explaination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Revenue Last Year (LY)</td>
+<td>CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(‘DimDate’[Date]))</td>
+<td>Revenue for the same period (e.g., month/quarter) last year.</td>
+</tr>
+<tr>
+<td>YOY Revenue Growth</td>
+<td>DIVIDE([Total Revenue] - [Revenue LY], [Revenue LY])</td>
+<td>Percentage growth of revenue compared to last year.</td>
+</tr>
+<tr>
+<td>Profit Last Year (LY)</td>
+<td>CALCULATE([Total Profit], SAMEPERIODLASTYEAR(‘DimDate’[Date]))</td>
+<td>Profit for the same period (e.g., month/quarter) last year.</td>
+</tr>
+<tr>
+<td>YOY Profit Growth</td>
+<td>DIVIDE([Total Profit] - [Profit Last Year],[Profit Last Year],BLANK())</td>
+<td>Track profit trends and ensure growth is profitable.</td>
+</tr>
+<tr>
+<td>Revenue Previous Month (PM)</td>
+<td>CALCULATE([Total Revenue], DATEADD(‘DimDate’[Date], -1, MONTH)).</td>
+<td>Revenue for the previous month.</td>
+</tr>
+<tr>
+<td>MOM Revenue Growth</td>
+<td>DIVIDE([Total Revenue] - [Revenue PM], Revenue PM)</td>
+<td>Percentage growth of revenue compared to the previous month.</td>
+</tr>
+<tr>
+<td>Profit PM</td>
+<td>CALCULATE([Total Profit], DATEADD(‘DimDate’[Date], -1, MONTH))</td>
+<td>Profit for the previous month</td>
+</tr>
+<tr>
+<td>MOM Profit Growth</td>
+<td>DIVIDE([Total Profit] - [Profit PM], [Profit PM], BLANK())</td>
+<td>Percentage growth of profit compared to the previous month.</td>
+</tr>
+</tbody>
+</table><p><strong>Customer Segmentation and Loyalty Measures</strong></p>
+<p>These measures are essential for evaluating the customer-segmentation program and the loyalty of high-value (Platinum) customers.</p>
+
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Formula</th>
+<th>Explaination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total Unique Customers</td>
+<td>DISTINCTCOUNT(‘customers’[CustomerID])</td>
+<td>Total number of distinct customers who made a purchase.</td>
+</tr>
+<tr>
+<td>Avg Spend per Transaction</td>
+<td>DIVIDE([Total Revenue], [Total Transactions])</td>
+<td>Answers if high-value segments (Platinum) show higher spend per transaction.</td>
+</tr>
+</tbody>
+</table><p><strong>Operational and Promotion Impact Measures</strong></p>
+<p>These measures allow you to correlate operational issues (ratings) with sales, and analyze the effect of pricing and discounts on profit.</p>
+
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Formula</th>
+<th>Explaination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Discount % (Avg)</td>
+<td>AVERAGE(‘FactSales’[Discount%])</td>
+<td>Used to slice data and analyze if higher discounts lead to lower profit margins.</td>
+</tr>
+<tr>
+<td>Average Service Rating</td>
+<td>AVERAGE(‘customer_service_ratings’[Rating])</td>
+<td>The average rating by Region, Store, or Category.</td>
+</tr>
+</tbody>
+</table><h3 id="interactive-dashboard-design">Interactive Dashboard Design</h3>
+<h4 id="executive-trend-monitoring-revenue-profit--growth">1. Executive Trend Monitoring (Revenue, Profit &amp; Growth)</h4>
+<p>Managers can monitor long-term health and identify seasonal patterns using the trend dashboard.</p>
+<p>Top Cards (KPIs) shows Total Revenue, Total Profit, Total Cost, Total Quantity Sold, Total Transaction, Total Unique Customers, Profit Margin, Average Service Rating, MOM Revenue Growth, YOY Revenue Growth, MOM Profit Growth, YOY Profit Growth.</p>
+<p>Slicers for month, year, region, category and discount, for visualisation based on particular region, discount and so on.</p>
+<p><strong>Performance Over Time</strong></p>
+<p>Line chart for <strong>Total Revenue</strong> and <strong>Total Profit</strong> over year</p>
+<p>The line chart shows steady revenue and profit growth from 2016 to 2024</p>
+<p>Line and clustered column chart that shows Total Revenue, Total Profit and Year-Over-Year(YOY) growth trends over month</p>
+<p>Table visual showing Year-Month, Total Revenue, MOM Revenue Growth, YOY Revenue Growth, Total Profit, MOM Profit Growth, YOY Profit Growth</p>
+<p>The dashboard tracks <strong>Year-over-Year (YoY)</strong> and <strong>Month-over-Month (MoM)</strong> growth to detect sudden market shift.</p>
+<h4 id="segment-performance-analysis">2. Segment Performance Analysis</h4>
+<p>The solution breaks down sales performance across four key dimensions:</p>
+<ul>
+<li>
+<p><strong>Product Categories:</strong> <strong>Laptops</strong> and <strong>TVs</strong> are the primary revenue drivers, significantly outpacing Audio Devices and Accessories. (Treemap Visual). Managers can drill through by selecting each category.</p>
+</li>
+<li>
+<p><strong>Customer Segments:</strong> While <strong>Silver</strong> customers represent the largest revenue, <strong>Platinum</strong> customers are the “high-opportunity” segment.</p>
+</li>
+<li>
+<p><strong>Brand Performance:</strong> Top 5 selling brands using column chart. Managers can drill through by selecting each brand.</p>
+</li>
+<li>
+<p><strong>Store Performance:</strong> Top 5 selling stores and manager can drill through to view the store performance.</p>
+</li>
+</ul>
+<h4 id="regional--store-performance-underperforming-areas">3. Regional &amp; Store Performance (Underperforming Areas)</h4>
+<p>Operations managers can identify stores that require attention based on profit margins rather than just volume.</p>
+<p><strong>Underperformers:</strong> Stores like <strong>North - Delhi Store 1</strong> and <strong>South - Tamil Nadu Store 2</strong> show the lowest profit margins (~15.7%).</p>
+<h4 id="service-quality--customer-retention">4. Service Quality &amp; Customer Retention</h4>
+<p>This view correlates operational metrics with financial outcomes.</p>
+<ul>
+<li>
+<p><strong>Ratings Distribution:</strong> Average service ratings are consistent across Delivery, Installation, Product Quality, and Support (averaging <strong>3.6/5.0</strong>).</p>
+</li>
+<li>
+<p><strong>Retention Correlation:</strong>  The scatter plot reveals a positive correlation between <strong>Customer Ratings</strong> and <strong>Purchase Frequency</strong>. Higher satisfaction scores directly lead to repeat business, making the “Support” and “Product Quality” teams critical for long-term revenue.</p>
+</li>
+<li>
+<p><strong>Average Rating Table:</strong>  This will visualize the “Retention Correlation” discovered, showing how Platinum and Gold customers cluster in the high-rating/high-frequency quadrant.</p>
+</li>
+</ul>
+<h4 id="impact-analysis">5. Impact Analysis</h4>
+<p>A dedicated “What-If” parameters pane allows managers to simulate the impact of strategy changes:</p>
+<ul>
+<li>
+<p><strong>Discount Sensitivity:</strong> Analysis shows that increasing discounts beyond 15% leads to a sharp decline in profit margin without a proportional surge in volume to compensate.</p>
+</li>
+<li>
+<p><strong>Impact of Payment Mode:</strong> Credit card mode generates highest revenue while cash generates least.</p>
+</li>
+</ul>
+<h3 id="conclusion">Conclusion</h3>
+<p>The highest revenue is currently driven by the Laptops, TVs, and Gaming Consoles categories, with Electra, Pulse, and ZenX emerging as the top-performing brands. To facilitate deeper performance analysis, the reporting system allows managers to drill through specific categories and brands for granular data.</p>
+<p>Geographically, revenue is concentrated in the Western and Northern regions. Notably, the top-selling stores are located in the West, and stakeholders can drill through these regional figures to examine individual store performance.</p>
+<p>A breakdown of customer segments reveals an interesting inverse relationship between revenue and engagement:</p>
+<p>Silver Segment: Generates the highest total revenue.</p>
+<p>Platinum Segment: Generates the least revenue but provides the highest volume of service ratings.</p>
+<p>Interestingly, the Average Service Rating appears to have a negligible impact on the performance of the service category.</p>
+</div>
+</body>
+
+</html>
